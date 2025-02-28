@@ -112,12 +112,7 @@ services:
       - redis_data:/data
     restart: always
     networks:
-      - traefik_network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      retries: 5
-      timeout: 5s
+      - traefik_network    
 
 networks:
   traefik_network:
