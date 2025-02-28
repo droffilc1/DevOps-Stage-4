@@ -11,7 +11,8 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--entrypoints.web.http.redirections.entryPoint.permanent=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
       - "--certificatesresolvers.myresolver.acme.email=cmapesa56@gmail.com"
       - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
     ports:
@@ -28,9 +29,12 @@ services:
     build: ./frontend
     env_file:
       - .env
+    container_name: frontend
     depends_on:
       - auth-api
       - todos-api
+    networks:
+      - traefik_network
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`cliffordmapesa.online`)"
@@ -41,8 +45,11 @@ services:
     build: ./auth-api
     env_file:
       - .env
+    container_name: auth-api
     depends_on:
       - users-api
+    networks:
+      - traefik_network
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.auth.rule=Host(`auth.cliffordmapesa.online`)"
@@ -50,15 +57,20 @@ services:
       - "traefik.http.routers.auth.tls.certresolver=myresolver"
       - "traefik.http.routers.auth-api.rule=Host(`cliffordmapesa.online`) && PathPrefix(`/api/auth`)"
       - "traefik.http.routers.auth-api.entrypoints=websecure"
-      - "traefik.http.routers.auth-api.tls.certresolver=myresolver"
+      - "traefik.http.routers.auth-api.tls.certresolver=myresolver"    
 
   todos-api:
     build: ./todos-api
     env_file:
       - .env
+    container_name: todos-api
     depends_on:
-      - redis-queue
-      - log-message-processor
+      redis-queue:
+        condition: service_healthy
+      log-message-processor:
+        condition: service_healthy
+    networks:
+      - traefik_network
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.todos.rule=Host(`todos.cliffordmapesa.online`)"
@@ -72,6 +84,9 @@ services:
     build: ./users-api
     env_file:
       - .env
+    container_name: users-api
+    networks:
+      - traefik_network
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.users.rule=Host(`users.cliffordmapesa.online`)"
@@ -85,14 +100,25 @@ services:
     build: ./log-message-processor
     env_file:
       - .env
+    container_name: log-message-processor
     depends_on:
-      - redis-queue
+      redis-queue:
+        condition: service_healthy
+    networks:
+      - traefik_network
 
   redis-queue:
     image: redis:7
     volumes:
       - redis_data:/data
     restart: always
+    networks:
+      - traefik_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
 
 networks:
   traefik_network:
