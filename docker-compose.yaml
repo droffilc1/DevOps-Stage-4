@@ -102,10 +102,15 @@ services:
       - .env
     container_name: log-message-processor
     depends_on:
-      redis-queue:
-        condition: service_healthy
+      - redis-queue
     networks:
       - traefik_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 
   redis-queue:
     image: redis:7
