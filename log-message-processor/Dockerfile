@@ -1,18 +1,14 @@
-FROM python:3.11-slim
-
-RUN apt-get update && apt-get install -y build-essential python3-dev libssl-dev libffi-dev \
-  && rm -rf /var/lib/apt/lists/*  # Clean up to reduce image size
+FROM python:3.8
 
 WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
-  && pip install --no-cache-dir -r requirements.txt
+RUN apt-get update && apt-get install -y gcc python3-dev
+
+RUN pip install -r requirements.txt
 
 COPY . .
 
-EXPOSE 8000
-
-CMD ["python", "main.py"]
+CMD ["python", "main.py"]CMD ["python", "main.py"]
 
