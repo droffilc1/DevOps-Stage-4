@@ -54,8 +54,8 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.auth.rule=Host(`auth.cliffordmapesa.online`)"
       - "traefik.http.routers.auth.entrypoints=websecure"
-      - "traefik.http.routers.auth.tls.certresolver=myresolver"
-      - "traefik.http.routers.auth-api.rule=Host(`cliffordmapesa.online`) && PathPrefix(`/api/auth`)"
+      - "traefik.http.routers.auth.tls.certresolver=myresolver"      
+      - "traefik.http.routers.auth-api.rule=Host(`cliffordmapesa.online`, `auth.cliffordmapesa.online`) && PathPrefix(`/api/auth`)"
       - "traefik.http.routers.auth-api.entrypoints=websecure"
       - "traefik.http.routers.auth-api.tls.certresolver=myresolver"
 
