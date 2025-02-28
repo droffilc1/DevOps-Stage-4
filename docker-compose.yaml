@@ -68,7 +68,7 @@ services:
       redis-queue:
         condition: service_healthy
       log-message-processor:
-        condition: service_healthy
+        condition: service_started
     networks:
       - traefik_network
     labels:
@@ -104,14 +104,8 @@ services:
     depends_on:
       - redis-queue
     networks:
-      - traefik_network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-      
+      - traefik_network   
+
   redis-queue:
     image: redis:7
     volumes:
